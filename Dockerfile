@@ -15,11 +15,17 @@ WORKDIR /app
 
 COPY . .
 
-RUN cmake -B build \
+RUN cmake -S . -B build \
     -DCMAKE_BUILD_TYPE=Release \
+    -DGGML_NATIVE=OFF \
     -DGGML_CUDA=OFF \
     -DGGML_METAL=OFF \
     -DGGML_VULKAN=OFF \
+    -DGGML_AVX512=OFF \
+    -DGGML_AVX512_VBMI=OFF \
+    -DGGML_AVX512_VNNI=OFF \
+    -DGGML_AVX512_BF16=OFF \
+    -DGGML_AVX_VNNI=OFF \
     && cmake --build build --config Release -j2
 
 RUN bash ./models/download-ggml-model.sh tiny /app/models
