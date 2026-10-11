@@ -1,3 +1,11 @@
+
+.git
+build
+models/*.bin
+models/*.gguf
+samples
+media
+.DS_Store
 build*/
 .github/
 .devops/
