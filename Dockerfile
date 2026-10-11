@@ -1,5 +1,4 @@
 
-# Build whisper.cpp
 FROM ubuntu:24.04 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -19,11 +18,8 @@ COPY . .
 RUN cmake -B build -DCMAKE_BUILD_TYPE=Release \
     && cmake --build build --config Release -j2
 
-# Download the small English Whisper model at build time.
-RUN mkdir -p /app/models \
-    && bash ./models/download-ggml-model.sh tiny /app/models
+RUN bash ./models/download-ggml-model.sh tiny /app/models
 
-# Runtime image
 FROM ubuntu:24.04 AS runtime
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -33,8 +29,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
+COPY --from=builder /app/build /app/build
 COPY --from=builder /app/build/bin/whisper-server /app/whisper-server
 COPY --from=builder /app/models/ggml-tiny.bin /app/models/ggml-tiny.bin
+
+RUN find /app/build -name 'lib*.so*' -printf '%h\n' \
+    | sort -u > /etc/ld.so.conf.d/whisper.conf \
+    && ldconfig
 
 ENV MODEL_PATH=/app/models/ggml-tiny.bin
 
