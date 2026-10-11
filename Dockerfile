@@ -15,7 +15,11 @@ WORKDIR /app
 
 COPY . .
 
-RUN cmake -B build -DCMAKE_BUILD_TYPE=Release \
+RUN cmake -B build \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DGGML_CUDA=OFF \
+    -DGGML_METAL=OFF \
+    -DGGML_VULKAN=OFF \
     && cmake --build build --config Release -j2
 
 RUN bash ./models/download-ggml-model.sh tiny /app/models
@@ -39,5 +43,4 @@ RUN find /app/build -name 'lib*.so*' -printf '%h\n' \
 
 ENV MODEL_PATH=/app/models/ggml-tiny.bin
 
-CMD ["sh", "-c", "exec /app/whisper-server --host 0.0.0.0 --port ${PORT:-10000} --model ${MODEL_PATH} -t 2"]
-
+CMD ["sh", "-c", "exec /app/whisper-server --host 0.0.0.0 --port ${PORT:-10000} --model ${MODEL_PATH} -t 2 --no-gpu"]
